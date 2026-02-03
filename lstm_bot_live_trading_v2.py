@@ -68,9 +68,6 @@ def calculate_technical_indicators_live(df: pd.DataFrame) -> pd.DataFrame:
     df['DayOfWeek_Cos'] = np.cos(2 * np.pi * day_of_week / 7)
     
     df['Is_Weekend'] = (df.index.dayofweek >= 5).astype(float)
-    df['Asian_Session'] = ((hour >= 0) & (hour < 8)).astype(float)
-    df['European_Session'] = ((hour >= 8) & (hour < 16)).astype(float)
-    df['US_Session'] = ((hour >= 16) & (hour <= 23)).astype(float)
 
     # Price features
     df['Returns'] = df['Close'].pct_change()
@@ -166,7 +163,7 @@ def get_live_features(df):
         'Price_Position', 'Volatility_10',
         # Time features
         'Hour_Sin', 'Hour_Cos', 'DayOfWeek_Sin', 'DayOfWeek_Cos', 
-        'Is_Weekend', 'Asian_Session', 'European_Session', 'US_Session'
+        'Is_Weekend'
     ]
     
     # Kiểm tra xem features có tồn tại trong df không
@@ -311,6 +308,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
