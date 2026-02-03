@@ -190,22 +190,28 @@ st.markdown("""
 
 @st.cache_resource
 def load_assets():
+    # Lấy thư mục hiện tại nơi chứa file .py
+    curr_dir = os.path.dirname(os.path.abspath(__file__))
     
-    base_path = os.path.dirname(__file__)
-    
-    # Kết hợp với tên file để tạo đường dẫn tuyệt đối
-    model = load_model(base_path, "BTC-USDT_best.keras")
-    scaler = joblib.load(base_path, "scaler_BTC-USDT.pkl")
-    # Kiểm tra tồn tại để báo lỗi rõ ràng trên Streamlit
+    model_path = os.path.join(curr_dir, "BTC-USDT_best.keras")
+    scaler_path = os.path.join(curr_dir, "scaler_BTC-USDT.pkl")
+
+    # Kiểm tra file tồn tại
     if not os.path.exists(model_path):
-        st.error(f"❌ Không tìm thấy model tại: {model_path}")
+        st.error(f"❌ Không thấy file MODEL: {model_name} tại {curr_dir}")
         st.stop()
-        
-    model = joblib.load(model_path)
+    if not os.path.exists(scaler_path):
+        st.error(f"❌ Không thấy file SCALER: {scaler_name} tại {curr_dir}")
+        st.stop()
 
-    return model, scaler
-
-model, scaler = load_assets()
+    try:
+        # SỬA LỖI: Truyền duy nhất 1 tham số đường dẫn vào load_model
+        model = load_model(model_path, compile=False)
+        scaler = joblib.load(scaler_path)
+        return model, scaler
+    except Exception as e:
+        st.error(f"❌ Lỗi khi nạp Model/Scaler: {e}")
+        st.stop()
 
 # Sidebar info
 st.sidebar.title("🤖 AI Control Panel")
@@ -303,6 +309,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
