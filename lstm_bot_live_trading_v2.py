@@ -259,7 +259,7 @@ while True:
             df.index = pd.to_datetime(df['ts'], unit='ms') + timedelta(hours=7)
 
             # 2. Process Features
-            df_full = calculate_all_features(df)
+            df_full = calculate_technical_indicators_live(df)
             feat_df = df_full[FEATURES_LIST]
 
             # 3. Predict
@@ -303,6 +303,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
