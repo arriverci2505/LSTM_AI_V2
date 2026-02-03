@@ -296,9 +296,11 @@ while True:
                             <p style="color:{color}; font-weight:bold;">Dự báo Net Return: {p_ret:+.3f}%</p>
                         </div>
                     """, unsafe_allow_html=True)
-                
+
+                    st.write("---")
+                    
                     # Hiển thị 2 cột Max Gain/Loss
-                    if "NEUTRAL" not in label.upper():
+                    if "NEUTRAL" not in label:
                         m1, m2 = st.columns(2)
                         m1.metric("Max Gain Dự Báo", f"${target_gain_price:,.2f}")
                         m2.metric("Max Loss Dự Báo", f"${target_loss_price:,.2f}")
@@ -316,6 +318,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
