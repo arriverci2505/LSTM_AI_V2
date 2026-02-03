@@ -275,10 +275,12 @@ while True:
                 
                 preds = model.predict(input_final, verbose=0)
                 p_gain, p_loss, p_ret = preds[0][0][0], preds[1][0][0], preds[2][0][0]
-
-                # 4. Update UI
-                price = df['Close'].iloc[-1]
+                current_price = df['Close'].iloc[-1]
+                predicted_price = current_price * (1 + (p_ret / 100))
+                target_gain_price = current_price * (1 + (p_gain / 100))
+                target_loss_price = current_price * (1 + (p_loss / 100))
                 
+                # 4. Update UI
                 # Logic phân loại màu sắc
                 if p_ret > 0.15: color, label, icon = "#00ff88", "STRONG BUY", "🔥"
                 elif p_ret > 0.05: color, label, icon = "#2ecc71", "BUY", "📈"
@@ -289,15 +291,15 @@ while True:
                 signal_box.markdown(f"""
                     <div style="background-color:{color}22; border: 2px solid {color}; padding:20px; border-radius:15px; text-align:center;">
                         <h1 style="color:{color}; margin:0; font-size: 40px;">{icon} {label}</h1>
-                        <h2 style="color:white; margin:10px 0;">BTC: ${price:,.2f}</h2>
-                        <p style="color:{color}; font-weight:bold;">Dự báo Net Return: {p_ret:+.3f}%</p>
+                        <h2 style="color:white; margin:10px 0;">BTC: ${current_price:,.2f}</h2>
+                        <p style="color:{color}; font-weight:bold;">Dự báo Net Return: {predicted_price:+.3f}%</p>
                     </div>
                 """, unsafe_allow_html=True)
 
                 with metrics_box.container():
                     m1, m2 = st.columns(2)
-                    m1.metric("Max Gain Dự Báo", f"{p_gain:.2f}%")
-                    m2.metric("Max Loss Dự Báo", f"{p_loss:.2f}%")
+                    m1.metric("Max Gain Dự Báo", f"{target_gain_price:.2f}%")
+                    m2.metric("Max Loss Dự Báo", f"{target_loss_price:.2f}%")
                 
                 status_box.success(f"✅ Cập nhật lúc {now.strftime('%H:%M:%S')}")
                 last_processed_minute = current_minute # Đánh dấu đã xử lý phút này
@@ -308,6 +310,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
