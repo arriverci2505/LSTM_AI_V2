@@ -260,7 +260,7 @@ while True:
 
             # 2. Process Features
             df_full = calculate_technical_indicators_live(df)
-            feat_df = df_full[FEATURES_LIST]
+            feat_df = df_full[get_live_features]
 
             # 3. Predict
             if len(feat_df) >= LIVE_CONFIG['sequence_length']:
@@ -303,6 +303,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
