@@ -194,8 +194,8 @@ def load_assets():
     base_path = os.path.dirname(__file__)
     
     # Kết hợp với tên file để tạo đường dẫn tuyệt đối
-    model = load_model(base_path, "BTC_USDT_best.pkl")
-    scaler = joblib.load(base_path, "BTC_USDT.keras")
+    model = load_model(base_path, "BTC-USDT_best.keras")
+    scaler = joblib.load(base_path, "scaler_BTC-USDT.pkl")
     # Kiểm tra tồn tại để báo lỗi rõ ràng trên Streamlit
     if not os.path.exists(model_path):
         st.error(f"❌ Không tìm thấy model tại: {model_path}")
@@ -303,5 +303,6 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
