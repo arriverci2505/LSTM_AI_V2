@@ -217,12 +217,12 @@ st.sidebar.title("🤖 AI Control Panel")
 st.sidebar.info("Model: LSTM + Multi-Head Attention\nStatus: Live Monitoring")
 
 # Chia cột giao diện
-col_signal, col_chart = st.columns([1, 1.8])
+col_signal, col_chart = st.columns([1, 1.2])
 
 with col_chart:
     st.markdown("### 📊 Market View")
     tv_html = """
-    <div style="height:600px;">
+    <div style="height:550px;">
         <div id="tv_chart" style="height:100%;"></div>
         <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
         <script type="text/javascript">
@@ -308,6 +308,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
