@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import tensorflow as tf
 import streamlit as st
+import streamlit.components.v1 as components
 import joblib
 import time
 import os
@@ -309,6 +310,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
