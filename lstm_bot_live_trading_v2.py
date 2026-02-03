@@ -300,7 +300,7 @@ while True:
                     m1.metric("Max Gain Dự Báo", f"${target_gain_price:.2f}")
                     m2.metric("Max Loss Dự Báo", f"${target_loss_price:.2f}")
                 
-                status_box.success(f"✅ Cập nhật lúc {now.strftime('%H:%M:%S')}")
+                st.caption(f"⏱️ Cập nhật: {now.strftime('%H:%M:%S')}")
                 last_processed_minute = current_minute # Đánh dấu đã xử lý phút này
 
         except Exception as e:
@@ -309,6 +309,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
