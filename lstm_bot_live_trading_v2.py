@@ -298,7 +298,7 @@ while True:
                     """, unsafe_allow_html=True)
                 
                     # Hiển thị 2 cột Max Gain/Loss
-                    if "NEUTRAL" not in sig:
+                    if "NEUTRAL" not in label.upper():
                         m1, m2 = st.columns(2)
                         m1.metric("Max Gain Dự Báo", f"${target_gain_price:,.2f}")
                         m2.metric("Max Loss Dự Báo", f"${target_loss_price:,.2f}")
@@ -316,6 +316,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
