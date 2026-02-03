@@ -302,7 +302,7 @@ while True:
                         m1, m2 = st.columns(2)
                         m1.metric("Max Gain Dự Báo", f"${target_gain_price:,.2f}")
                         m2.metric("Max Loss Dự Báo", f"${target_loss_price:,.2f}")
-                    else
+                    else:
                         st.warning("Thị trường đang sideway, kiên nhẫn đợi tín hiệu rõ ràng hơn".)
                         
                     st.caption(f"⏱️ Cập nhật: {now.strftime('%H:%M:%S')}")
@@ -316,6 +316,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
