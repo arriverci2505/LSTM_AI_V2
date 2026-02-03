@@ -82,9 +82,17 @@ def calculate_technical_indicators_live(df: pd.DataFrame) -> pd.DataFrame:
 
     # RSI
     delta = df['Close'].diff()
-    gain = (delta.where(delta > 0, 0)).ewm(alpha=1/14, adjust=False).mean()
-    loss = (-delta.where(delta < 0, 0)).ewm(alpha=1/14, adjust=False).mean()
-    rs = gain / (loss + 1e-10)
+    gain = delta.copy()
+    loss = delta.copy()
+    
+    gain[gain < 0] = 0
+    loss[loss > 0] = 0
+    loss = abs(loss)
+    
+    avg_gain = gain.ewm(alpha=1/14, adjust=False).mean()
+    avg_loss = loss.ewm(alpha=1/14, adjust=False).mean()
+    
+    rs = avg_gain / (avg_loss + 1e-10)
     df['RSI'] = 100 - (100 / (1 + rs))
     df['RSI_Norm'] = (df['RSI'] - 50) / 50
 
@@ -254,13 +262,13 @@ while True:
             status_box.write(f"⏳ Đang lấy dữ liệu mới tại phút {current_minute}...")
             
             # 1. Fetch Data
-            ohlcv = exchange.fetch_ohlcv(LIVE_CONFIG['symbol'], timeframe='15m', limit=100)
+            ohlcv = exchange.fetch_ohlcv(LIVE_CONFIG['symbol'], timeframe='15m', limit=300)
             df = pd.DataFrame(ohlcv, columns=['ts', 'Open', 'High', 'Low', 'Close', 'Volume'])
             df.index = pd.to_datetime(df['ts'], unit='ms') + timedelta(hours=7)
 
             # 2. Process Features
             df_full = calculate_technical_indicators_live(df)
-            feat_df = df_full[get_live_features]
+            feat_df = get_live_features(df_full)
 
             # 3. Predict
             if len(feat_df) >= LIVE_CONFIG['sequence_length']:
@@ -303,6 +311,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
