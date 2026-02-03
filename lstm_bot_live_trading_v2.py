@@ -257,7 +257,6 @@ while True:
     if current_minute != last_processed_minute:
         try:
             status_box.caption(f"⏳ Đang lấy dữ liệu mới tại phút {current_minute}...")
-            status_box.empty()
             
             # 1. Fetch Data
             ohlcv = exchange.fetch_ohlcv(LIVE_CONFIG['symbol'], timeframe='15m', limit=300)
@@ -304,6 +303,8 @@ while True:
                     m2.metric("Max Loss Dự Báo", f"${target_loss_price:,.2f}")
                     
                     st.caption(f"⏱️ Cập nhật: {now.strftime('%H:%M:%S')}")
+                    status_box.empty()
+                    
                     last_processed_minute = current_minute # Đánh dấu đã xử lý phút này
 
         except Exception as e:
@@ -312,6 +313,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
