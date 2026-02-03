@@ -295,13 +295,23 @@ while True:
                     </div>
                 """, unsafe_allow_html=True)
 
-                with metrics_box.container():
-                    m1, m2 = st.columns(2)
-                    m1.metric("Max Gain Dự Báo", f"${target_gain_price:.2f}")
-                    m2.metric("Max Loss Dự Báo", f"${target_loss_price:.2f}")
+                with signal_box.container(): 
+                    # Bảng tín hiệu chính
+                    st.markdown(f"""
+                        <div style="background-color:{color}15; border: 2px solid {color}; padding:30px; border-radius:15px; text-align:center;">
+                            <h1 style="color:{color}; margin:0; font-size: 40px;">{icon} {label}</h1>
+                            <h2 style="color:white; margin:10px 0;">BTC: ${price:,.2f}</h2>
+                            <p style="color:{color}; font-weight:bold;">Dự báo Net Return: {p_ret:+.3f}%</p>
+                        </div>
+                    """, unsafe_allow_html=True)
                 
-                st.caption(f"⏱️ Cập nhật: {now.strftime('%H:%M:%S')}")
-                last_processed_minute = current_minute # Đánh dấu đã xử lý phút này
+                    # Hiển thị 2 cột Max Gain/Loss
+                    m1, m2 = st.columns(2)
+                    m1.metric("Max Gain Dự Báo", f"${target_gain_price:,.2f}")
+                    m2.metric("Max Loss Dự Báo", f"${target_loss_price:,.2f}")
+                    
+                    st.caption(f"⏱️ Cập nhật: {now.strftime('%H:%M:%S')}")
+                    last_processed_minute = current_minute # Đánh dấu đã xử lý phút này
 
         except Exception as e:
             st.error(f"Lỗi: {e}")
@@ -309,6 +319,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
