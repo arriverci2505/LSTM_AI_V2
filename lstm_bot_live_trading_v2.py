@@ -150,11 +150,6 @@ def calculate_technical_indicators_live(df: pd.DataFrame) -> pd.DataFrame:
 
 def get_live_features(df):
     """Chọn lọc features y hệt như lúc training (Hàm select_features trong code cũ)"""
-    # LƯU Ý: Danh sách này phải KHỚP CHÍNH XÁC với danh sách features sau khi đã 
-    # loại bỏ correlation cao ở bước training.
-    # Tốt nhất là bạn nên lưu list features ra file json khi train, nhưng ở đây tôi
-    # sẽ list ra các features mặc định thường được chọn trong code training của bạn.
-    
     selected_features = [
         'RSI_Norm', 'MACD_Norm', 'MACD_Hist',
         'BB_Width', 'BB_Position',
@@ -261,7 +256,7 @@ while True:
             status_box.write(f"⏳ Đang lấy dữ liệu mới tại phút {current_minute}...")
             
             # 1. Fetch Data
-            ohlcv = exchange.fetch_ohlcv(ST_CONFIG['symbol'], timeframe='15m', limit=100)
+            ohlcv = exchange.fetch_ohlcv(LIVE_CONFIG['symbol'], timeframe='15m', limit=100)
             df = pd.DataFrame(ohlcv, columns=['ts', 'Open', 'High', 'Low', 'Close', 'Volume'])
             df.index = pd.to_datetime(df['ts'], unit='ms') + timedelta(hours=7)
 
@@ -270,8 +265,8 @@ while True:
             feat_df = df_full[FEATURES_LIST]
 
             # 3. Predict
-            if len(feat_df) >= ST_CONFIG['sequence_length']:
-                input_seq = feat_df.tail(ST_CONFIG['sequence_length']).values
+            if len(feat_df) >= LIVE_CONFIG['sequence_length']:
+                input_seq = feat_df.tail(LIVE_CONFIG['sequence_length']).values
                 input_scaled = scaler.transform(input_seq)
                 input_final = np.expand_dims(input_scaled, axis=0)
                 
@@ -310,6 +305,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
