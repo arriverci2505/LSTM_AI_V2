@@ -12,6 +12,8 @@ import warnings
 
 warnings.filterwarnings('ignore')
 
+base_path = os.path.dirname(__file__)
+
 # ════════════════════════════════════════════════════════════════════════════
 # 1. LIVE CONFIGURATION
 # ════════════════════════════════════════════════════════════════════════════
@@ -19,9 +21,6 @@ warnings.filterwarnings('ignore')
 LIVE_CONFIG = {
     # Exchange Settings
     'exchange_id': 'binance',  # binance, bybit, kraken...
-    'api_key': 'YOUR_API_KEY',
-    'api_secret': 'YOUR_API_SECRET',
-    'sandbox_mode': True,      # True = Testnet, False = Real Money (CẨN TRỌNG!)
     
     # Trading Settings
     'symbol': 'BTC/USDT',      # Lưu ý format của CCXT thường là Base/Quote
@@ -29,6 +28,7 @@ LIVE_CONFIG = {
     'limit': 500,              # Cần đủ dữ liệu để tính indicators (EMA 200)
     
     # Model Paths (Đường dẫn đến file đã train)
+    
     'model_path': './LSTM_Trading_Models_V4.2/models/BTC-USDT_best.keras',
     'scaler_path': './LSTM_Trading_Models_V4.2/models/scaler_BTC-USDT.pkl',
     
@@ -175,225 +175,127 @@ def get_live_features(df):
         
     return df[selected_features]
 
-# ════════════════════════════════════════════════════════════════════════════
-# 3. TRADING BOT CLASS
-# ════════════════════════════════════════════════════════════════════════════
+# ==========================================
+# 3. GIAO DIỆN STREAMLIT & TRADINGVIEW
+# ==========================================
+st.set_page_config(page_title="AI Bitcoin Terminal", layout="wide")
 
-class AI_Trader:
-    def __init__(self, config):
-        self.config = config
-        self.connect_exchange()
-        self.load_brain()
+st.markdown("""
+    <style>
+    .main { background-color: #0e1117; color: white; }
+    .stMetric { background-color: #1c2128; border: 1px solid #30363d; border-radius: 10px; padding: 15px; }
+    </style>
+    """, unsafe_allow_html=True)
+
+@st.cache_resource
+def load_assets():
+    
+    base_path = os.path.dirname(__file__)
+    
+    # Kết hợp với tên file để tạo đường dẫn tuyệt đối
+    model = load_model(base_path, "BTC_USDT_best.pkl")
+    scaler = joblib.load(base_path, "BTC_USDT_ensemble.pkl")
+    # Kiểm tra tồn tại để báo lỗi rõ ràng trên Streamlit
+    if not os.path.exists(model_path):
+        st.error(f"❌ Không tìm thấy model tại: {model_path}")
+        st.stop()
         
-    def connect_exchange(self):
-        """Kết nối sàn giao dịch"""
-        try:
-            exchange_class = getattr(ccxt, self.config['exchange_id'])
-            self.exchange = exchange_class({
-                'apiKey': self.config['api_key'],
-                'secret': self.config['api_secret'],
-                'enableRateLimit': True,
-                'options': {'defaultType': 'future'} # Giả sử đánh Futures
-            })
-            self.exchange.set_sandbox_mode(self.config['sandbox_mode'])
-            print(f"✅ Connected to {self.config['exchange_id']} (Sandbox: {self.config['sandbox_mode']})")
-        except Exception as e:
-            print(f"❌ Connection Error: {e}")
-            exit()
+    model = joblib.load(model_path)
 
-    def load_brain(self):
-        """Load Model và Scaler"""
-        try:
-            print(f"⏳ Loading model from {self.config['model_path']}...")
-            self.model = load_model(self.config['model_path'])
-            self.scaler = joblib.load(self.config['scaler_path'])
-            print("✅ Brain loaded successfully!")
-        except Exception as e:
-            print(f"❌ Error loading model/scaler: {e}")
-            print("Hãy chắc chắn bạn đã train model và đường dẫn file đúng.")
-            exit()
+    return model, scaler
 
-    def fetch_data(self):
-        """Lấy dữ liệu nến mới nhất"""
-        try:
-            # Lấy nhiều nến hơn limit một chút để trừ hao
-            ohlcv = self.exchange.fetch_ohlcv(
-                self.config['symbol'], 
-                self.config['timeframe'], 
-                limit=self.config['limit'] + 50
-            )
-            df = pd.DataFrame(ohlcv, columns=['timestamp', 'Open', 'High', 'Low', 'Close', 'Volume'])
-            df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
-            df.set_index('timestamp', inplace=True)
-            return df
-        except Exception as e:
-            print(f"⚠️ Fetch Error: {e}")
-            return None
+model, scaler = load_assets()
 
-    def predict(self, df):
-        """Xử lý dữ liệu và đưa ra dự đoán"""
-        # 1. Calculate Indicators
-        df_processed = calculate_technical_indicators_live(df)
-        df_processed.dropna(inplace=True)
+# Sidebar info
+st.sidebar.title("🤖 AI Control Panel")
+st.sidebar.info("Model: LSTM + Multi-Head Attention\nStatus: Live Monitoring")
+
+# Chia cột giao diện
+col_signal, col_chart = st.columns([1, 1.8])
+
+with col_chart:
+    st.markdown("### 📊 Market View")
+    tv_html = """
+    <div style="height:600px;">
+        <div id="tv_chart" style="height:100%;"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+        <script type="text/javascript">
+        new TradingView.widget({
+            "autosize": true, "symbol": "BINANCE:BTCUSDT", "interval": "15",
+            "timezone": "Asia/Ho_Chi_Minh", "theme": "dark", "style": "1",
+            "locale": "vi", "container_id": "tv_chart"
+        });
+        </script>
+    </div>
+    """
+    components.html(tv_html, height=620)
+
+with col_signal:
+    st.markdown("### 🧠 AI Prediction")
+    signal_box = st.empty()
+    price_metrics = st.empty()
+    details_box = st.empty()
+
+# ==========================================
+# 4. LUỒNG CHẠY LIVE
+# ==========================================
+try:
+    model, scaler = load_assets()
+    exchange = ccxt.binance()
+
+    while True:
+        # 1. Lấy dữ liệu
+        ohlcv = exchange.fetch_ohlcv(ST_CONFIG['symbol'], timeframe='15m', limit=100)
+        df = pd.DataFrame(ohlcv, columns=['ts', 'Open', 'High', 'Low', 'Close', 'Volume'])
+        df['Date'] = pd.to_datetime(df['ts'], unit='ms') + timedelta(hours=7)
+        df.set_index('Date', inplace=True)
+
+        # 2. Xử lý Feature
+        df_indicators = calculate_indicators(df)
+        feat_df = get_selected_features(df_indicators)
         
-        # 2. Select Features
-        features_df = get_live_features(df_processed)
-        if features_df is None or len(features_df) < self.config['sequence_length']:
-            print("⚠️ Not enough data for prediction")
-            return None, None
+        # 3. Dự đoán
+        if len(feat_df) >= ST_CONFIG['sequence_length']:
+            last_seq = feat_df.tail(ST_CONFIG['sequence_length']).values
+            last_seq_scaled = scaler.transform(last_seq)
+            input_data = np.expand_dims(last_seq_scaled, axis=0)
             
-        # 3. Scale Data (Chỉ transform, không fit)
-        # Lấy đúng sequence_length nến cuối cùng
-        last_sequence = features_df.tail(self.config['sequence_length']).values
-        scaled_sequence = self.scaler.transform(last_sequence)
-        
-        # Reshape for LSTM: (1, 60, n_features)
-        input_data = np.expand_dims(scaled_sequence, axis=0)
-        
-        # 4. Predict
-        # Model trả về [max_gain, max_loss, net_return]
-        predictions = self.model.predict(input_data, verbose=0)
-        
-        p_gain = predictions[0][0][0] # Max Gain
-        p_loss = predictions[1][0][0] # Max Loss
-        p_ret = predictions[2][0][0]  # Net Return
-        
-        return p_gain, p_loss, p_ret
+            # Predict: [Max_Gain, Max_Loss, Net_Return]
+            preds = model.predict(input_data, verbose=0)
+            p_gain, p_loss, p_ret = preds[0][0][0], preds[1][0][0], preds[2][0][0]
 
-    def execute_logic(self, p_gain, p_loss, p_ret, current_price):
-        """Logic vào lệnh dựa trên dự đoán"""
-        
-        # --- 1. Tính toán chỉ số ---
-        # Logic tính Confidence giống hệt Backtest
-        mae = self.config['mae_return_avg']
-        z_score = abs(p_ret) / (mae + 1e-10)
-        
-        # Consistency Check
-        consistency_penalty = 1.0
-        if (p_ret > 0 and p_gain < 0) or (p_ret < 0 and p_loss > 0):
-            consistency_penalty = 0.6
+            # 4. Hiển thị UI
+            current_price = df['Close'].iloc[-1]
             
-        confidence = ((2 / (1 + np.exp(-z_score * 1.5)) - 1) * 100) * consistency_penalty
-        
-        # --- 2. Xác định hướng ---
-        if p_ret > 0:
-            direction = 'LONG'
-            base_tp = abs(p_gain)
-            base_sl = abs(p_loss)
-        else:
-            direction = 'SHORT'
-            base_tp = abs(p_loss)
-            base_sl = abs(p_gain)
-            
-        reward_risk = base_tp / (base_sl + 1e-10)
+            # Logic Signal
+            if p_ret > 0.2:
+                color, label, icon = "#00ff88", "STRONG BUY", "🚀"
+            elif p_ret > 0.05:
+                color, label, icon = "#2ecc71", "BUY", "📈"
+            elif p_ret < -0.2:
+                color, label, icon = "#ff4b4b", "STRONG SELL", "💀"
+            elif p_ret < -0.05:
+                color, label, icon = "#e74c3c", "SELL", "📉"
+            else:
+                color, label, icon = "#8b949e", "WAITING", "⚖️"
 
-        print(f"\n📊 ANALYSIS [{datetime.now().strftime('%H:%M:%S')}]")
-        print(f"   Price: {current_price} | Pred Return: {p_ret:.4f}%")
-        print(f"   Direction: {direction} | Conf: {confidence:.2f}% | R/R: {reward_risk:.2f}")
+            signal_box.markdown(f"""
+                <div style="background-color:{color}22; border: 2px solid {color}; padding:25px; border-radius:15px; text-align:center;">
+                    <h1 style="color:{color}; margin:0;">{icon} {label}</h1>
+                    <h2 style="margin:5px 0;">${current_price:,.2f}</h2>
+                    <p style="opacity:0.8;">Dự báo Net Return: {p_ret:+.3f}%</p>
+                </div>
+            """, unsafe_allow_html=True)
 
-        # --- 3. Điều kiện vào lệnh ---
-        if (confidence >= self.config['min_confidence'] and 
-            reward_risk >= self.config['min_reward_risk'] and
-            abs(p_ret) >= self.config['min_predicted_return']):
-            
-            print(f"🚀 SIGNAL FOUND: {direction} BTC!")
-            
-            # Tính TP/SL
-            mae_buffer = mae * self.config['sl_buffer']
-            sl_pct = max((base_sl + mae_buffer) / 100, 0.01) # Min SL 1%
-            tp_pct = max(base_tp / 100, 0.012)
-            
-            # Thực hiện lệnh (Ở đây chỉ in ra, bạn bỏ comment đoạn dưới để đánh thật)
-            self.place_order(direction, current_price, sl_pct, tp_pct)
-        else:
-            print("💤 No valid signal. Waiting...")
+            with price_metrics.container():
+                m1, m2, m3 = st.columns(3)
+                m1.metric("Dự báo Max Gain", f"{p_gain:.2f}%")
+                m2.metric("Dự báo Max Loss", f"{p_loss:.2f}%")
+                m3.metric("R/R Ratio", f"{abs(p_gain/p_loss):.2f}" if p_loss !=0 else "N/A")
 
-    def place_order(self, direction, price, sl_pct, tp_pct):
-        """Gửi lệnh lên sàn"""
-        print(f"⚡ EXECUTING {direction}...")
-        
-        # Tính SL/TP Price
-        if direction == 'LONG':
-            side = 'buy'
-            sl_price = price * (1 - sl_pct)
-            tp_price = price * (1 + tp_pct)
-        else:
-            side = 'sell'
-            sl_price = price * (1 + sl_pct)
-            tp_price = price * (1 - tp_pct)
-            
-        print(f"   Entry: {price:.2f} | SL: {sl_price:.2f} | TP: {tp_price:.2f}")
-        
-        # --- CODE THỰC THI (CCXT) ---
-        # Lưu ý: Cần tính toán khối lượng (amount) dựa trên balance
-        try:
-            # 1. Lấy Balance
-            balance = self.exchange.fetch_balance()
-            usdt_balance = balance['USDT']['free']
-            
-            # 2. Tính Size (Risk 2%)
-            risk_amt = usdt_balance * self.config['risk_per_trade']
-            # Công thức size: Risk / (Entry - SL)
-            # Simplified for leverage:
-            position_value = risk_amt / sl_pct 
-            amount = position_value / price
-            
-            # Check leverage limit
-            max_val = usdt_balance * self.config['leverage']
-            if position_value > max_val:
-                amount = max_val / price
-                print("⚠️ Adjusted size due to leverage limit")
+            details_box.write(f"⏱️ Cập nhật lúc: {datetime.now().strftime('%H:%M:%S')}")
 
-            # 3. Đặt lệnh Market
-            # order = self.exchange.create_market_order(
-            #     symbol=self.config['symbol'],
-            #     side=side,
-            #     amount=amount
-            # )
-            # print(f"✅ Order Placed: {order['id']}")
-            
-            # 4. Đặt SL/TP (Tùy sàn hỗ trợ gộp lệnh hay phải đặt riêng)
-            # ... Code đặt OCO order hoặc Stop Market order ...
-            
-            print(f"⚠️ Simulation Mode: Would buy {amount:.4f} BTC")
-            
-        except Exception as e:
-            print(f"❌ Order Failed: {e}")
+        time.sleep(30) # Refresh mỗi 30 giây
 
-    def run(self):
-        """Vòng lặp chính"""
-        print("🤖 Bot Started. Waiting for next candle...")
-        while True:
-            try:
-                # Đồng bộ thời gian để chạy ngay khi đóng nến
-                now = datetime.now()
-                # Ví dụ 15m: chạy vào phút 0, 15, 30, 45
-                # Hoặc đơn giản là chạy mỗi 30 giây để check
-                
-                df = self.fetch_data()
-                if df is not None:
-                    current_price = df['Close'].iloc[-1]
-                    
-                    # Dự đoán
-                    p_gain, p_loss, p_ret = self.predict(df)
-                    
-                    if p_gain is not None:
-                        self.execute_logic(p_gain, p_loss, p_ret, current_price)
-                
-                # Sleep 60s để tránh spam API
-                time.sleep(60) 
-                
-            except KeyboardInterrupt:
-                print("🛑 Bot stopped by user.")
-                break
-            except Exception as e:
-                print(f"⚠️ Error in loop: {e}")
-                time.sleep(10)
-
-# ════════════════════════════════════════════════════════════════════════════
-# 4. MAIN EXECUTION
-# ════════════════════════════════════════════════════════════════════════════
-
-if __name__ == "__main__":
-    bot = AI_Trader(LIVE_CONFIG)
-    bot.run()
+except Exception as e:
+    st.error(f"Lỗi vận hành: {e}")
