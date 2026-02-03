@@ -1,7 +1,18 @@
+# --- Core Frameworks ---
 streamlit
+tensorflow
+# Lưu ý: Nếu dùng Streamlit Cloud hoặc máy không có GPU, có thể thay bằng tensorflow-cpu==2.15.0
+
+# --- Data & Exchange ---
 ccxt
 pandas
 numpy
-joblib
+
+# --- Machine Learning & Math ---
 scikit-learn
-yfinance
+joblib
+scipy
+
+# --- Utilities ---
+requests
+python-dateutil
