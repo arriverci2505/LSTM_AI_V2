@@ -250,7 +250,7 @@ exchange = ccxt.kraken()
 last_processed_minute = -1 # Biến kiểm soát thời gian
 
 while True:
-    now = datetime.now()
+    now = datetime.now() + timedelta(hours=7)
     current_minute = now.minute
 
     # CHỈ CHẠY KHI SANG PHÚT MỚI
@@ -313,6 +313,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
