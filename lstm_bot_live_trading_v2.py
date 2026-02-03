@@ -284,10 +284,10 @@ while True:
                 elif p_ret > 0.05: color, label, icon = "#2ecc71", "BUY", "📈"
                 elif p_ret < -0.15: color, label, icon = "#ff4b4b", "STRONG SELL", "💀"
                 elif p_ret < -0.05: color, label, icon = "#e74c3c", "SELL", "📉"
-                else: color, label, icon = "#8b949e", "NEUTRAL", "⚖️"
+                else: color, label, icon = "#f1c40f", "NEUTRAL", "⚖️"
 
                 signal_box.markdown(f"""
-                    <div style="background-color:{color}15; border: 2px solid {color}; padding:30px; border-radius:15px; text-align:center;">
+                    <div style="background-color:{color}22; border: 2px solid {color}; padding:20px; border-radius:15px; text-align:center;">
                         <h1 style="color:{color}; margin:0; font-size: 40px;">{icon} {label}</h1>
                         <h2 style="color:white; margin:10px 0;">BTC: ${price:,.2f}</h2>
                         <p style="color:{color}; font-weight:bold;">Dự báo Net Return: {p_ret:+.3f}%</p>
@@ -308,6 +308,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
