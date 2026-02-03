@@ -21,9 +21,6 @@ base_path = os.path.dirname(__file__)
 # ════════════════════════════════════════════════════════════════════════════
 
 LIVE_CONFIG = {
-    # Exchange Settings
-    'exchange_id': 'binance',  # binance, bybit, kraken...
-    
     # Trading Settings
     'symbol': 'BTC/USDT',      # Lưu ý format của CCXT thường là Base/Quote
     'timeframe': '15m',
@@ -243,7 +240,7 @@ with col_signal:
 # 4. MAIN LIVE LOOP (CẬP NHẬT MỖI PHÚT)
 # ==========================================
 model, scaler = load_assets()
-exchange = ccxt.binance()
+exchange = ccxt.binanceus({'enableRateLimit': True})
 last_processed_minute = -1 # Biến kiểm soát thời gian
 
 while True:
@@ -305,6 +302,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
