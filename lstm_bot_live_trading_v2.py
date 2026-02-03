@@ -276,7 +276,6 @@ while True:
                 preds = model.predict(input_final, verbose=0)
                 p_gain, p_loss, p_ret = preds[0][0][0], preds[1][0][0], preds[2][0][0]
                 current_price = df['Close'].iloc[-1]
-                predicted_price = current_price * (1 + (p_ret / 100))
                 target_gain_price = current_price * (1 + (p_gain / 100))
                 target_loss_price = current_price * (1 + (p_loss / 100))
                 
@@ -292,7 +291,7 @@ while True:
                     <div style="background-color:{color}22; border: 2px solid {color}; padding:20px; border-radius:15px; text-align:center;">
                         <h1 style="color:{color}; margin:0; font-size: 40px;">{icon} {label}</h1>
                         <h2 style="color:white; margin:10px 0;">BTC: ${current_price:,.2f}</h2>
-                        <p style="color:{color}; font-weight:bold;">Dự báo Net Return: ${predicted_price:+.3f}</p>
+                        <p style="color:{color}; font-weight:bold;">Dự báo Net Return: {p_ret:+.3f}%</p>
                     </div>
                 """, unsafe_allow_html=True)
 
@@ -310,6 +309,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
