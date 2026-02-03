@@ -194,7 +194,7 @@ def load_assets():
     
     # Kết hợp với tên file để tạo đường dẫn tuyệt đối
     model = load_model(base_path, "BTC_USDT_best.pkl")
-    scaler = joblib.load(base_path, "BTC_USDT_ensemble.pkl")
+    scaler = joblib.load(base_path, "BTC_USDT.keras")
     # Kiểm tra tồn tại để báo lỗi rõ ràng trên Streamlit
     if not os.path.exists(model_path):
         st.error(f"❌ Không tìm thấy model tại: {model_path}")
@@ -231,71 +231,75 @@ with col_chart:
     components.html(tv_html, height=620)
 
 with col_signal:
-    st.markdown("### 🧠 AI Prediction")
+    st.markdown("### 🤖 AI Prediction")
     signal_box = st.empty()
-    price_metrics = st.empty()
-    details_box = st.empty()
+    metrics_box = st.empty()
+    status_box = st.empty()
 
 # ==========================================
-# 4. LUỒNG CHẠY LIVE
+# 4. MAIN LIVE LOOP (CẬP NHẬT MỖI PHÚT)
 # ==========================================
-try:
-    model, scaler = load_assets()
-    exchange = ccxt.binance()
+model, scaler = load_assets()
+exchange = ccxt.binance()
+last_processed_minute = -1 # Biến kiểm soát thời gian
 
-    while True:
-        # 1. Lấy dữ liệu
-        ohlcv = exchange.fetch_ohlcv(ST_CONFIG['symbol'], timeframe='15m', limit=100)
-        df = pd.DataFrame(ohlcv, columns=['ts', 'Open', 'High', 'Low', 'Close', 'Volume'])
-        df['Date'] = pd.to_datetime(df['ts'], unit='ms') + timedelta(hours=7)
-        df.set_index('Date', inplace=True)
+while True:
+    now = datetime.now()
+    current_minute = now.minute
 
-        # 2. Xử lý Feature
-        df_indicators = calculate_indicators(df)
-        feat_df = get_selected_features(df_indicators)
-        
-        # 3. Dự đoán
-        if len(feat_df) >= ST_CONFIG['sequence_length']:
-            last_seq = feat_df.tail(ST_CONFIG['sequence_length']).values
-            last_seq_scaled = scaler.transform(last_seq)
-            input_data = np.expand_dims(last_seq_scaled, axis=0)
+    # CHỈ CHẠY KHI SANG PHÚT MỚI
+    if current_minute != last_processed_minute:
+        try:
+            status_box.write(f"⏳ Đang lấy dữ liệu mới tại phút {current_minute}...")
             
-            # Predict: [Max_Gain, Max_Loss, Net_Return]
-            preds = model.predict(input_data, verbose=0)
-            p_gain, p_loss, p_ret = preds[0][0][0], preds[1][0][0], preds[2][0][0]
+            # 1. Fetch Data
+            ohlcv = exchange.fetch_ohlcv(ST_CONFIG['symbol'], timeframe='15m', limit=100)
+            df = pd.DataFrame(ohlcv, columns=['ts', 'Open', 'High', 'Low', 'Close', 'Volume'])
+            df.index = pd.to_datetime(df['ts'], unit='ms') + timedelta(hours=7)
 
-            # 4. Hiển thị UI
-            current_price = df['Close'].iloc[-1]
-            
-            # Logic Signal
-            if p_ret > 0.2:
-                color, label, icon = "#00ff88", "STRONG BUY", "🚀"
-            elif p_ret > 0.05:
-                color, label, icon = "#2ecc71", "BUY", "📈"
-            elif p_ret < -0.2:
-                color, label, icon = "#ff4b4b", "STRONG SELL", "💀"
-            elif p_ret < -0.05:
-                color, label, icon = "#e74c3c", "SELL", "📉"
-            else:
-                color, label, icon = "#8b949e", "WAITING", "⚖️"
+            # 2. Process Features
+            df_full = calculate_all_features(df)
+            feat_df = df_full[FEATURES_LIST]
 
-            signal_box.markdown(f"""
-                <div style="background-color:{color}22; border: 2px solid {color}; padding:25px; border-radius:15px; text-align:center;">
-                    <h1 style="color:{color}; margin:0;">{icon} {label}</h1>
-                    <h2 style="margin:5px 0;">${current_price:,.2f}</h2>
-                    <p style="opacity:0.8;">Dự báo Net Return: {p_ret:+.3f}%</p>
-                </div>
-            """, unsafe_allow_html=True)
+            # 3. Predict
+            if len(feat_df) >= ST_CONFIG['sequence_length']:
+                input_seq = feat_df.tail(ST_CONFIG['sequence_length']).values
+                input_scaled = scaler.transform(input_seq)
+                input_final = np.expand_dims(input_scaled, axis=0)
+                
+                preds = model.predict(input_final, verbose=0)
+                p_gain, p_loss, p_ret = preds[0][0][0], preds[1][0][0], preds[2][0][0]
 
-            with price_metrics.container():
-                m1, m2, m3 = st.columns(3)
-                m1.metric("Dự báo Max Gain", f"{p_gain:.2f}%")
-                m2.metric("Dự báo Max Loss", f"{p_loss:.2f}%")
-                m3.metric("R/R Ratio", f"{abs(p_gain/p_loss):.2f}" if p_loss !=0 else "N/A")
+                # 4. Update UI
+                price = df['Close'].iloc[-1]
+                
+                # Logic phân loại màu sắc
+                if p_ret > 0.15: color, label, icon = "#00ff88", "STRONG BUY", "🔥"
+                elif p_ret > 0.05: color, label, icon = "#2ecc71", "BUY", "📈"
+                elif p_ret < -0.15: color, label, icon = "#ff4b4b", "STRONG SELL", "💀"
+                elif p_ret < -0.05: color, label, icon = "#e74c3c", "SELL", "📉"
+                else: color, label, icon = "#8b949e", "NEUTRAL", "⚖️"
 
-            details_box.write(f"⏱️ Cập nhật lúc: {datetime.now().strftime('%H:%M:%S')}")
+                signal_box.markdown(f"""
+                    <div style="background-color:{color}15; border: 2px solid {color}; padding:30px; border-radius:15px; text-align:center;">
+                        <h1 style="color:{color}; margin:0; font-size: 40px;">{icon} {label}</h1>
+                        <h2 style="color:white; margin:10px 0;">BTC: ${price:,.2f}</h2>
+                        <p style="color:{color}; font-weight:bold;">Dự báo Net Return: {p_ret:+.3f}%</p>
+                    </div>
+                """, unsafe_allow_html=True)
 
-        time.sleep(30) # Refresh mỗi 30 giây
+                with metrics_box.container():
+                    m1, m2 = st.columns(2)
+                    m1.metric("Max Gain Dự Báo", f"{p_gain:.2f}%")
+                    m2.metric("Max Loss Dự Báo", f"{p_loss:.2f}%")
+                
+                status_box.success(f"✅ Cập nhật lúc {now.strftime('%H:%M:%S')}")
+                last_processed_minute = current_minute # Đánh dấu đã xử lý phút này
 
-except Exception as e:
-    st.error(f"Lỗi vận hành: {e}")
+        except Exception as e:
+            st.error(f"Lỗi: {e}")
+            time.sleep(5) # Đợi 5s nếu lỗi mạng rồi thử lại
+    
+    # Nghỉ ngắn để không treo CPU
+    time.sleep(1)
+
