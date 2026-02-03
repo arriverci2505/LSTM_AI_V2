@@ -257,6 +257,7 @@ while True:
     if current_minute != last_processed_minute:
         try:
             status_box.caption(f"⏳ Đang lấy dữ liệu mới tại phút {current_minute}...")
+            status_box.empty()
             
             # 1. Fetch Data
             ohlcv = exchange.fetch_ohlcv(LIVE_CONFIG['symbol'], timeframe='15m', limit=300)
@@ -311,6 +312,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
