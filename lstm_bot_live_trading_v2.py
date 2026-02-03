@@ -221,7 +221,7 @@ with col_chart:
         <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
         <script type="text/javascript">
         new TradingView.widget({
-            "autosize": true, "symbol": "BINANCE:BTCUSDT", "interval": "15",
+            "autosize": true, "symbol": "KRAKEN:BTCUSDT", "interval": "15",
             "timezone": "Asia/Ho_Chi_Minh", "theme": "dark", "style": "1",
             "locale": "vi", "container_id": "tv_chart"
         });
@@ -240,7 +240,7 @@ with col_signal:
 # 4. MAIN LIVE LOOP (CẬP NHẬT MỖI PHÚT)
 # ==========================================
 model, scaler = load_assets()
-exchange = ccxt.binanceus({'enableRateLimit': True})
+exchange = ccxt.kraken()
 last_processed_minute = -1 # Biến kiểm soát thời gian
 
 while True:
@@ -302,6 +302,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
