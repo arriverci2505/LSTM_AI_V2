@@ -292,14 +292,14 @@ while True:
                     <div style="background-color:{color}22; border: 2px solid {color}; padding:20px; border-radius:15px; text-align:center;">
                         <h1 style="color:{color}; margin:0; font-size: 40px;">{icon} {label}</h1>
                         <h2 style="color:white; margin:10px 0;">BTC: ${current_price:,.2f}</h2>
-                        <p style="color:{color}; font-weight:bold;">Dự báo Net Return: {predicted_price:+.3f}%</p>
+                        <p style="color:{color}; font-weight:bold;">Dự báo Net Return: ${predicted_price:+.3f}</p>
                     </div>
                 """, unsafe_allow_html=True)
 
                 with metrics_box.container():
                     m1, m2 = st.columns(2)
-                    m1.metric("Max Gain Dự Báo", f"{target_gain_price:.2f}%")
-                    m2.metric("Max Loss Dự Báo", f"{target_loss_price:.2f}%")
+                    m1.metric("Max Gain Dự Báo", f"${target_gain_price:.2f}")
+                    m2.metric("Max Loss Dự Báo", f"${target_loss_price:.2f}")
                 
                 status_box.success(f"✅ Cập nhật lúc {now.strftime('%H:%M:%S')}")
                 last_processed_minute = current_minute # Đánh dấu đã xử lý phút này
@@ -310,6 +310,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
