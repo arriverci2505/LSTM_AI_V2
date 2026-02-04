@@ -299,9 +299,13 @@ while True:
 
                     st.write("---")
                     
-                    m1, m2 = st.columns(2)
+                    m1, m2, m3 = st.columns(3)
                     m1.metric("Max Gain Dự Báo", f"${target_gain_price:,.2f}")
                     m2.metric("Max Loss Dự Báo", f"${target_loss_price:,.2f}")
+                    rr_color = "normal" if reward_risk_ratio >= LIVE_CONFIG['min_reward_risk'] else "inverse"
+                    m3.metric("R:R Ratio", f"{reward_risk_ratio:.2f}", 
+                              delta=f"{reward_risk_ratio - LIVE_CONFIG['min_reward_risk']:.2f} vs Min",
+                              delta_color=rr_color)
                     
                     # Khuyến nghị riêng biệt
                     if label == "NEUTRAL":
@@ -309,7 +313,7 @@ while True:
                     elif "BUY" in label:
                         st.success("🚀 Xu hướng tăng đang hình thành, cân nhắc điểm vào lệnh.")
                     elif "SELL" in label:
-                        st.error("📉 Áp lực bán xuất hiện, cẩn trọng rủi ro.")
+                        st.warning("📉 Tín hiệu SHORT: Cơ hội bán khống để kiếm lời khi giá giảm.")
                     # Hiển thị 2 cột Max Gain/Loss
 
 
@@ -324,6 +328,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
