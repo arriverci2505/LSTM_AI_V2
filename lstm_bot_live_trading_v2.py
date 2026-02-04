@@ -318,7 +318,6 @@ while True:
                     m2.metric(sl_label, f"${sl_price:,.2f}")
                     
                     # Giới hạn R:R để tránh lỗi hiển thị số quá lớn
-                    display_rr = min(reward_risk_ratio, 99.99)
                     # 1. Định nghĩa màu sắc trực quan hơn
                     if reward_risk_ratio < 1.0:
                         rr_status = "❌ KÈO XẤU"
@@ -371,6 +370,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
