@@ -302,34 +302,34 @@ while True:
 
                 # 6. Bảng tín hiệu chính
                 with signal_box.container():
-                st.markdown(f"""
-                    <div style="background-color:{color}15; border: 2px solid {color}; padding:30px; border-radius:15px; text-align:center;">
-                        <h1 style="color:{color}; margin:0; font-size: 40px;">{icon} {label}</h1>
-                        <h2 style="color:white; margin:10px 0;">BTC: ${current_price :,.2f}</h2>
-                        <p style="color:{color}; font-weight:bold;">Dự báo Net Return: {p_ret:+.3f}%</p>
-                    </div>
-                """, unsafe_allow_html=True)
-
-                st.write("---")
-                    
-                m1, m2, m3 = st.columns(3)
-                m1.metric(tp_label, f"${tp_price:,.2f}", delta="Target", delta_color=tp_color)
-                m2.metric(sl_label, f"${sl_price:,.2f}", delta="Risk", delta_color=sl_color)
-                rr_color = "normal" if reward_risk_ratio >= LIVE_CONFIG['min_reward_risk'] else "inverse"
-                m3.metric("R:R Ratio", f"{reward_risk_ratio:.2f}", 
-                            delta=f"{reward_risk_ratio - LIVE_CONFIG['min_reward_risk']:.2f}",
-                            delta_color=rr_color)
-                    
-                # Khuyến nghị riêng biệt
-                if label == "NEUTRAL":
-                    st.info("💡 Thị trường đang sideway, kiên nhẫn đợi tín hiệu rõ ràng hơn.")
-                elif "BUY" in label:
-                    st.success("🚀 Xu hướng tăng đang hình thành, cân nhắc điểm vào lệnh.")
-                elif "SELL" in label:
-                    st.warning("📉 Tín hiệu SHORT: Cơ hội bán khống để kiếm lời khi giá giảm.")
-
-                st.caption(f"⏱️ Cập nhật: {now.strftime('%H:%M:%S')}")
-                status_box.empty()
+                    st.markdown(f"""
+                        <div style="background-color:{color}15; border: 2px solid {color}; padding:30px; border-radius:15px; text-align:center;">
+                            <h1 style="color:{color}; margin:0; font-size: 40px;">{icon} {label}</h1>
+                            <h2 style="color:white; margin:10px 0;">BTC: ${current_price :,.2f}</h2>
+                            <p style="color:{color}; font-weight:bold;">Dự báo Net Return: {p_ret:+.3f}%</p>
+                        </div>
+                    """, unsafe_allow_html=True)
+    
+                    st.write("---")
+                        
+                    m1, m2, m3 = st.columns(3)
+                    m1.metric(tp_label, f"${tp_price:,.2f}", delta="Target", delta_color=tp_color)
+                    m2.metric(sl_label, f"${sl_price:,.2f}", delta="Risk", delta_color=sl_color)
+                    rr_color = "normal" if reward_risk_ratio >= LIVE_CONFIG['min_reward_risk'] else "inverse"
+                    m3.metric("R:R Ratio", f"{reward_risk_ratio:.2f}", 
+                                delta=f"{reward_risk_ratio - LIVE_CONFIG['min_reward_risk']:.2f}",
+                                delta_color=rr_color)
+                        
+                    # Khuyến nghị riêng biệt
+                    if label == "NEUTRAL":
+                        st.info("💡 Thị trường đang sideway, kiên nhẫn đợi tín hiệu rõ ràng hơn.")
+                    elif "BUY" in label:
+                        st.success("🚀 Xu hướng tăng đang hình thành, cân nhắc điểm vào lệnh.")
+                    elif "SELL" in label:
+                        st.warning("📉 Tín hiệu SHORT: Cơ hội bán khống để kiếm lời khi giá giảm.")
+    
+                    st.caption(f"⏱️ Cập nhật: {now.strftime('%H:%M:%S')}")
+                    status_box.empty()
                     
                 last_processed_minute = current_minute # Đánh dấu đã xử lý phút này
 
@@ -339,3 +339,4 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
