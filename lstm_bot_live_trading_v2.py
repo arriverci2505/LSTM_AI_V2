@@ -313,8 +313,8 @@ while True:
                     st.write("---")
                         
                     m1, m2, m3 = st.columns(3)
-                    m1.metric(tp_label, f"${tp_price:,.2f}", delta="Target", delta_color=tp_color)
-                    m2.metric(sl_label, f"${sl_price:,.2f}", delta="Risk", delta_color=sl_color)
+                    m1.metric(tp_label, f"${tp_price:,.2f}")
+                    m2.metric(sl_label, f"${sl_price:,.2f}")
                     rr_color = "normal" if reward_risk_ratio >= LIVE_CONFIG['min_reward_risk'] else "inverse"
                     m3.metric("R:R Ratio", f"{reward_risk_ratio:.2f}", 
                                 delta=f"{reward_risk_ratio - LIVE_CONFIG['min_reward_risk']:.2f}",
@@ -349,6 +349,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
