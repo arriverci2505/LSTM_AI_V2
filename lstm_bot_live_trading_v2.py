@@ -281,11 +281,12 @@ while True:
                 reward_risk_ratio = abs(p_gain) / abs(p_loss) if abs(p_loss) > 0 else 0
                 
                 # 4. Update UI
-                # Logic phân loại màu sắc
-                if p_ret > 0.15: color, label, icon = "#00ff88", "STRONG BUY", "🔥"
-                elif p_ret > 0.05: color, label, icon = "#2ecc71", "BUY", "📈"
-                elif p_ret < -0.15: color, label, icon = "#ff4b4b", "STRONG SELL", "💀"
-                elif p_ret < -0.05: color, label, icon = "#e74c3c", "SELL", "📉"
+                # Xác định nhãn Buy/Sell/Neutral
+                min_ret = LIVE_CONFIG['min_predicted_return']
+                if p_ret > min_ret * 1.5: color, label, icon = "#00ff88", "STRONG BUY", "🔥"
+                elif p_ret > min_ret : color, label, icon = "#2ecc71", "BUY", "📈"
+                elif p_ret < -min_ret * 1.5: color, label, icon = "#ff4b4b", "STRONG SELL", "💀"
+                elif p_ret < -min_ret : color, label, icon = "#e74c3c", "SELL", "📉"
                 else: color, label, icon = "#f1c40f", "NEUTRAL", "⚖️"
 
                 # 5. Xác định nhãn TP/SL dựa trên dự báo Net Return (p_ret)
@@ -302,44 +303,48 @@ while True:
 
                 # 6. Bảng tín hiệu chính
                 with signal_box.container():
+                    # Gom nhóm Header
                     st.markdown(f"""
-                        <div style="background-color:{color}15; border: 2px solid {color}; padding:30px; border-radius:15px; text-align:center;">
-                            <h1 style="color:{color}; margin:0; font-size: 40px;">{icon} {label}</h1>
+                        <div style="background-color:{color}15; border: 2px solid {color}; padding:25px; border-radius:15px; text-align:center; margin-bottom: 20px;">
+                            <h1 style="color:{color}; margin:0; font-size: 35px;">{icon} {label}</h1>
                             <h2 style="color:white; margin:10px 0;">BTC: ${current_price :,.2f}</h2>
-                            <p style="color:{color}; font-weight:bold;">Dự báo Net Return: {p_ret:+.3f}%</p>
+                            <p style="color:{color}; font-weight:bold; font-size: 18px;">Dự báo Net Return: {p_ret:+.3f}%</p>
                         </div>
                     """, unsafe_allow_html=True)
-    
-                    st.write("---")
-                        
+
+                    # Hiển thị Metrics
                     m1, m2, m3 = st.columns(3)
                     m1.metric(tp_label, f"${tp_price:,.2f}")
                     m2.metric(sl_label, f"${sl_price:,.2f}")
-                    rr_color = "normal" if reward_risk_ratio >= LIVE_CONFIG['min_reward_risk'] else "inverse"
-                    m3.metric("R:R Ratio", f"{reward_risk_ratio:.2f}", 
-                                delta=f"{reward_risk_ratio - LIVE_CONFIG['min_reward_risk']:.2f}",
-                                delta_color=rr_color)
-                        
-                    # Khuyến nghị riêng biệt
+                    
+                    # Giới hạn R:R để tránh lỗi hiển thị số quá lớn
+                    display_rr = min(reward_risk_ratio, 99.99)
+                    rr_color = "normal" if display_rr >= LIVE_CONFIG['min_reward_risk'] else "inverse"
+                    m3.metric("R:R Ratio", f"{display_rr:.2f}", 
+                              delta=f"{display_rr - LIVE_CONFIG['min_reward_risk']:.2f}",
+                              delta_color=rr_color)
+                    
+                    st.divider()
+
+                    # Khuyến nghị & Audio
                     if label == "NEUTRAL":
                         st.info("💡 Thị trường đang sideway, kiên nhẫn đợi tín hiệu rõ ràng hơn.")
-                    elif "BUY" in label:
-                        st.success("🚀 Xu hướng tăng đang hình thành, cân nhắc điểm vào lệnh.")
-                    elif "SELL" in label:
-                        st.warning("📉 Tín hiệu SHORT: Cơ hội bán khống để kiếm lời khi giá giảm.")
-
-                    if label != "NEUTRAL" and reward_risk_ratio >= LIVE_CONFIG['min_reward_risk']:
-                        st.components.v1.html(
-                            """
-                            <audio autoplay>
-                                <source src="https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3" type="audio/mpeg">
-                            </audio>
-                            """,
-                            height=0,
-                        )
-                                                
-                    st.caption(f"⏱️ Cập nhật: {now.strftime('%H:%M:%S')}")
-                    status_box.empty()
+                    else:
+                        if "BUY" in label:
+                            st.success("🚀 Xu hướng tăng đang hình thành, cân nhắc vào lệnh LONG.")
+                        else:
+                            st.warning("📉 Tín hiệu SHORT: Cơ hội kiếm lời khi giá giảm.")
+                        
+                        # Chỉ phát nhạc nếu đạt chuẩn R:R
+                        if reward_risk_ratio >= LIVE_CONFIG['min_reward_risk']:
+                            components.html(
+                                f"""<audio autoplay><source src="https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3" type="audio/mpeg"></audio>""",
+                                height=0
+                            )
+                    
+                    st.caption(f"⏱️ Cập nhật: {now.strftime('%H:%M:%S')} | Model: V4.2")
+                
+                status_box.empty()
                     
                 last_processed_minute = current_minute # Đánh dấu đã xử lý phút này
 
@@ -349,10 +354,6 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
-
-
-
-
 
 
 
