@@ -328,7 +328,7 @@ while True:
                     elif "SELL" in label:
                         st.warning("📉 Tín hiệu SHORT: Cơ hội bán khống để kiếm lời khi giá giảm.")
 
-                    else:
+                    if label != "NEUTRAL":
                         # Chèn âm thanh thông báo (Beep) khi có lệnh bán hoặc mua
                         st.components.v1.html(
                             '<audio autoplay><source src="https://www.soundjay.com/buttons/beep-01a.mp3" type="audio/mpeg"></audio>',
@@ -346,5 +346,6 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
