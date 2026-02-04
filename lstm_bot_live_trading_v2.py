@@ -319,10 +319,27 @@ while True:
                     
                     # Giới hạn R:R để tránh lỗi hiển thị số quá lớn
                     display_rr = min(reward_risk_ratio, 99.99)
-                    rr_color = "normal" if display_rr >= LIVE_CONFIG['min_reward_risk'] else "inverse"
-                    m3.metric("R:R Ratio", f"{display_rr:.2f}", 
-                              delta=f"{display_rr - LIVE_CONFIG['min_reward_risk']:.2f}",
-                              delta_color=rr_color)
+                    # 1. Định nghĩa màu sắc trực quan hơn
+                    if reward_risk_ratio < 1.0:
+                        rr_status = "❌ KÈO XẤU"
+                        rr_color_hex = "#ff4b4b" # Đỏ
+                        delta_color = "inverse"
+                    elif reward_risk_ratio < LIVE_CONFIG['min_reward_risk']:
+                        rr_status = "⚠️ CHƯA ĐẠT CHUẨN"
+                        rr_color_hex = "#f1c40f" # Vàng
+                        delta_color = "normal"
+                    else:
+                        rr_status = "✅ KÈO THƠM"
+                        rr_color_hex = "#00ff88" # Xanh
+                        delta_color = "normal"
+                    
+                    # 2. Hiển thị Metric với trạng thái
+                    m3.metric(
+                        "R:R Ratio", 
+                        f"{reward_risk_ratio:.2f}", 
+                        delta=rr_status, 
+                        delta_color=delta_color
+                    )
                     
                     st.divider()
 
@@ -354,6 +371,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
