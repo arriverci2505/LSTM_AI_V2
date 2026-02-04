@@ -316,29 +316,7 @@ while True:
                     m1, m2, m3 = st.columns(3)
                     m1.metric(tp_label, f"${tp_price:,.2f}")
                     m2.metric(sl_label, f"${sl_price:,.2f}")
-                    
-                    # Giới hạn R:R để tránh lỗi hiển thị số quá lớn
-                    # 1. Định nghĩa màu sắc trực quan hơn
-                    if reward_risk_ratio < 1.0:
-                        rr_status = "❌ KÈO XẤU"
-                        rr_color_hex = "#ff4b4b" # Đỏ
-                        delta_color = "inverse"
-                    elif reward_risk_ratio < LIVE_CONFIG['min_reward_risk']:
-                        rr_status = "⚠️ CHƯA ĐẠT CHUẨN"
-                        rr_color_hex = "#f1c40f" # Vàng
-                        delta_color = "normal"
-                    else:
-                        rr_status = "✅ KÈO THƠM"
-                        rr_color_hex = "#00ff88" # Xanh
-                        delta_color = "normal"
-                    
-                    # 2. Hiển thị Metric với trạng thái
-                    m3.metric(
-                        "R:R Ratio", 
-                        f"{reward_risk_ratio:.2f}", 
-                        delta=rr_status, 
-                        delta_color=delta_color
-                    )
+                    m3.metric("Tỉ lệ rủi ro trên lợi nhuận (R:R Ratio)", f"{reward_risk_ratio:.2f}")
                     
                     st.divider()
 
@@ -370,6 +348,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
