@@ -335,7 +335,7 @@ while True:
                                 <audio autoplay><source src="https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3" type="audio/mpeg"></audio>
                                 """,
                                 height=0,
-                            )
+                        )
                                                 
                     st.caption(f"⏱️ Cập nhật: {now.strftime('%H:%M:%S')}")
                     status_box.empty()
@@ -348,6 +348,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
