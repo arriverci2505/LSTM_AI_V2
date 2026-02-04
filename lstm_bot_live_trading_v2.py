@@ -278,6 +278,7 @@ while True:
                 current_price = df['Close'].iloc[-1]
                 target_gain_price = current_price * (1 + (p_gain / 100))
                 target_loss_price = current_price * (1 + (p_loss / 100))
+                reward_risk_ratio = abs(p_gain) / abs(p_loss) if abs(p_loss) > 0 else 0
                 
                 # 4. Update UI
                 # Logic phân loại màu sắc
@@ -328,6 +329,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
