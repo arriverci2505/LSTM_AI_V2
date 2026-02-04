@@ -327,7 +327,14 @@ while True:
                         st.success("🚀 Xu hướng tăng đang hình thành, cân nhắc điểm vào lệnh.")
                     elif "SELL" in label:
                         st.warning("📉 Tín hiệu SHORT: Cơ hội bán khống để kiếm lời khi giá giảm.")
-    
+
+                    else:
+                        # Chèn âm thanh thông báo (Beep) khi có lệnh bán hoặc mua
+                        st.components.v1.html(
+                            '<audio autoplay><source src="https://www.soundjay.com/buttons/beep-01a.mp3" type="audio/mpeg"></audio>',
+                            height=0,
+                        )
+                            
                     st.caption(f"⏱️ Cập nhật: {now.strftime('%H:%M:%S')}")
                     status_box.empty()
                     
@@ -339,4 +346,5 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
