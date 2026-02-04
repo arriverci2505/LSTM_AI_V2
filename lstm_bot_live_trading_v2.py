@@ -328,13 +328,14 @@ while True:
                     elif "SELL" in label:
                         st.warning("📉 Tín hiệu SHORT: Cơ hội bán khống để kiếm lời khi giá giảm.")
 
-                   if label != "NEUTRAL" and reward_risk_ratio >= LIVE_CONFIG['min_reward_risk']:
-                        # Chỉ kêu khi có tín hiệu VÀ tỷ lệ lợi nhuận tốt
+                    if label != "NEUTRAL" and reward_risk_ratio >= LIVE_CONFIG['min_reward_risk']:
                         st.components.v1.html(
-                                """
-                                <audio autoplay><source src="https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3" type="audio/mpeg"></audio>
-                                """,
-                                height=0,
+                            """
+                            <audio autoplay>
+                                <source src="https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3" type="audio/mpeg">
+                            </audio>
+                            """,
+                            height=0,
                         )
                                                 
                     st.caption(f"⏱️ Cập nhật: {now.strftime('%H:%M:%S')}")
@@ -348,6 +349,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
