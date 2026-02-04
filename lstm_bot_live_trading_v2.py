@@ -299,8 +299,9 @@ while True:
                     tp_label, sl_label = "Chốt lời (TP)", "Dừng lỗ (SL)"
                     tp_price, sl_price = target_loss_price, target_gain_price # Đảo giá trị
                     tp_color, sl_color = "normal", "inverse"
-                    
+
                 # 6. Bảng tín hiệu chính
+                with signal_box.container():
                 st.markdown(f"""
                     <div style="background-color:{color}15; border: 2px solid {color}; padding:30px; border-radius:15px; text-align:center;">
                         <h1 style="color:{color}; margin:0; font-size: 40px;">{icon} {label}</h1>
@@ -338,38 +339,3 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
