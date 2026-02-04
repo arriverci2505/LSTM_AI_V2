@@ -316,7 +316,7 @@ while True:
                     m1, m2, m3 = st.columns(3)
                     m1.metric(tp_label, f"${tp_price:,.2f}")
                     m2.metric(sl_label, f"${sl_price:,.2f}")
-                    m3.metric("Tỉ lệ rủi ro trên lợi nhuận (R:R Ratio)", f"{reward_risk_ratio:.2f}")
+                    m3.metric("R:R Ratio", f"{reward_risk_ratio:.2f}")
                     
                     st.divider()
 
@@ -348,6 +348,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
