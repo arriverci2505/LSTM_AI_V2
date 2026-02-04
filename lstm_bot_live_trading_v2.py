@@ -328,13 +328,15 @@ while True:
                     elif "SELL" in label:
                         st.warning("📉 Tín hiệu SHORT: Cơ hội bán khống để kiếm lời khi giá giảm.")
 
-                    if label != "NEUTRAL":
-                        # Chèn âm thanh thông báo (Beep) khi có lệnh bán hoặc mua
+                   if label != "NEUTRAL" and reward_risk_ratio >= LIVE_CONFIG['min_reward_risk']:
+                        # Chỉ kêu khi có tín hiệu VÀ tỷ lệ lợi nhuận tốt
                         st.components.v1.html(
-                            '<audio autoplay><source src="https://www.soundjay.com/buttons/beep-01a.mp3" type="audio/mpeg"></audio>',
-                            height=0,
-                        )
-                            
+                                """
+                                <audio autoplay><source src="https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3" type="audio/mpeg"></audio>
+                                """,
+                                height=0,
+                            )
+                                                
                     st.caption(f"⏱️ Cập nhật: {now.strftime('%H:%M:%S')}")
                     status_box.empty()
                     
@@ -346,6 +348,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
