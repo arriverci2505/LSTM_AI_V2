@@ -278,7 +278,9 @@ while True:
                 current_price = df['Close'].iloc[-1]
                 target_gain_price = current_price * (1 + (p_gain / 100))
                 target_loss_price = current_price * (1 + (p_loss / 100))
-                reward_risk_ratio = abs(p_gain) / abs(p_loss) if abs(p_loss) > 0 else 0
+                # Tính toán khoảng cách giá để xác định Reward và Risk thực tế
+                dist_up = abs(target_gain_price - current_price)
+                dist_down = abs(target_loss_price - current_price)
                 
                 # 4. Update UI
                 # Xác định nhãn Buy/Sell/Neutral
@@ -295,11 +297,13 @@ while True:
                     tp_label, sl_label = "Chốt lời (TP)", "Dừng lỗ (SL)"
                     tp_price, sl_price = target_gain_price, target_loss_price
                     tp_color, sl_color = "normal", "inverse"
+                    reward_risk_ratio = dist_up / dist_down if dist_down > 0 else 0
                 else:
                     # Logic cho lệnh SELL (Short) - Đảo ngược lại
                     tp_label, sl_label = "Chốt lời (TP)", "Dừng lỗ (SL)"
                     tp_price, sl_price = target_loss_price, target_gain_price # Đảo giá trị
                     tp_color, sl_color = "normal", "inverse"
+                    reward_risk_ratio = dist_down / dist_up if dist_up > 0 else 0
 
                 # 6. Bảng tín hiệu chính
                 with signal_box.container():
@@ -348,6 +352,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
