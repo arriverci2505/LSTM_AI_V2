@@ -276,8 +276,9 @@ while True:
                 preds = model.predict(input_final, verbose=0)
                 p_gain, p_loss, p_ret = preds[0][0][0], preds[1][0][0], preds[2][0][0]
                 current_price = df['Close'].iloc[-1]
+                atr_value = df_full['ATR'].iloc[-1]
                 target_gain_price = current_price * (1 + (p_gain / 100))
-                target_loss_price = current_price * (1 + (p_loss / 100))
+                target_loss_price = current_price + (atr_value * 2)
                 # Tính toán khoảng cách giá để xác định Reward và Risk thực tế
                 dist_up = abs(target_gain_price - current_price)
                 dist_down = abs(target_loss_price - current_price)
@@ -352,6 +353,7 @@ while True:
     
     # Nghỉ ngắn để không treo CPU
     time.sleep(1)
+
 
 
 
